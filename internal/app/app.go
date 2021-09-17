@@ -43,7 +43,7 @@ func Run() {
 	// start server
 	go func() {
 		if err := e.StartServer(srv); err != nil {
-			e.Logger.Info("shutting down the server: %v", err)
+			e.Logger.Infof("shutting down the server: %v", err)
 		}
 	}()
 
@@ -57,7 +57,7 @@ func Run() {
 	defer cancel()
 
 	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Info("error occurred while shutting down: %v", err)
+		e.Logger.Infof("error occurred while shutting down: %v", err)
 	}
 
 	select {
