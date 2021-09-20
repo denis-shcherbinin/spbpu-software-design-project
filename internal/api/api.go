@@ -41,7 +41,6 @@ func Run() {
 	if err != nil {
 		log.Fatalf("error occured while connecting to PostgresDB: %v\n", err)
 	}
-
 	log.Println("PostgresDB connected!")
 
 	repo := repository.NewRepository(postgresDB)
