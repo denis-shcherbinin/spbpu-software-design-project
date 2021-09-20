@@ -3,8 +3,13 @@ module github.com/denis-shcherbinin/spbpu-software-design-project
 go 1.17
 
 require (
-	github.com/jessevdk/go-flags v1.5.0 // indirect
-	github.com/labstack/echo/v4 v4.5.0 // indirect
+	github.com/jessevdk/go-flags v1.5.0
+	github.com/jmoiron/sqlx v1.3.4
+	github.com/labstack/echo/v4 v4.5.0
+	github.com/lib/pq v1.2.0
+)
+
+require (
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect

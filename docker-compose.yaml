@@ -2,10 +2,37 @@ version: "3.0"
 
 services:
   todo-app:
+    restart: always
     build: ./
     image: todo-app:latest
-    container_name: todo-app-container
+    container_name: "todo-app"
     ports:
       - "8080:8080"
     env_file:
       - .env
+    volumes:
+      - ./var/todo-app:/srv/var
+    depends_on:
+      - migrate
+
+  migrate:
+    image: migrate/migrate:v4.12.2
+    container_name: "todo-app-migrate"
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: ""
+    command: [ "sh", "-c", "sleep 3 && migrate -path /migrations -database postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable up" ]
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13.4
+    container_name: "todo-app-postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./var/db_data:/var/lib/postgresql/data
