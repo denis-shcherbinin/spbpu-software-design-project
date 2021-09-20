@@ -1,10 +1,10 @@
 version: "3.0"
 
 services:
-  app:
+  todo-app:
     build: ./
-    image: app:latest
-    container_name: app
+    image: todo-app:latest
+    container_name: todo-app-container
     ports:
       - "8080:8080"
     env_file:

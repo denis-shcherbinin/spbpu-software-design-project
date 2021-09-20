@@ -1,9 +1,9 @@
-package app
+package api
 
 import (
 	"context"
 	"fmt"
-	"github.com/denis-shcherbinin/spbpu-software-design-project/handler"
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/handler"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/server"
 	"github.com/jessevdk/go-flags"
 	"github.com/labstack/echo/v4"
