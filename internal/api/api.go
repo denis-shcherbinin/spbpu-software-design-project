@@ -76,8 +76,9 @@ func Run() {
 		err = postgresDB.Close()
 		if err != nil {
 			log.Printf("error occurred while disconnecting postgresDB: %v\n", err)
+		} else {
+			log.Println("PostgresDB disconnected")
 		}
-		log.Println("PostgresDB disconnected")
 
 		cancel()
 	}()
