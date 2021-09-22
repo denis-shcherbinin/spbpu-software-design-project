@@ -17,4 +17,6 @@ func NewHandler(services *service.Service) *Handler {
 }
 
 func (h *Handler) Init(api *echo.Group) {
+	v1 := api.Group("/v1")
+	h.initUsersRoutes(v1)
 }

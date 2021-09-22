@@ -15,6 +15,7 @@ import (
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/postgres"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/server"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/service"
+	"github.com/denis-shcherbinin/spbpu-software-design-project/pkg/hasher"
 )
 
 func Run() {
@@ -45,7 +46,9 @@ func Run() {
 
 	repo := repository.NewRepository(postgresDB)
 
-	services := service.NewService(repo)
+	passwordHasher := hasher.NewSHA1Hasher(opts.Auth.PasswordSalt)
+
+	services := service.NewService(repo, passwordHasher)
 
 	handlers := handler.NewHandler(services)
 	e := handlers.Init(handler.InitOpts{
