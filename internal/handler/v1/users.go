@@ -7,7 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/service"
 )
 
@@ -67,7 +67,7 @@ func (h *Handler) signUp(c echo.Context) error {
 		Password:   opts.Password,
 	})
 	if err != nil {
-		if err == repository.ErrUserAlreadyExists {
+		if err == errs.ErrUserAlreadyExists {
 			return errorResponse(c, http.StatusBadRequest, err)
 		}
 		return errorResponse(c, http.StatusInternalServerError, err)

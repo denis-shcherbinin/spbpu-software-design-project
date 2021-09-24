@@ -1,15 +1,9 @@
 package repository
 
 import (
-	"errors"
-
 	"github.com/jmoiron/sqlx"
 
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
-)
-
-var (
-	ErrUserAlreadyExists = errors.New("user already exists")
 )
 
 type Auth interface {

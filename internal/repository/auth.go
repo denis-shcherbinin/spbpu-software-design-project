@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 )
 
@@ -43,11 +44,9 @@ func (repo *AuthRepo) CreateUser(opts CreateUserOpts) (*domain.User, error) {
 		opts.Password,   // 4
 	)
 	if err != nil {
-		// TODO: error handling
 		if err != sql.ErrNoRows {
-			return nil, ErrUserAlreadyExists
+			return nil, errs.ErrUserAlreadyExists
 		}
-
 		return nil, err
 	}
 
