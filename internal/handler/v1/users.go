@@ -12,7 +12,7 @@ import (
 )
 
 func (h *Handler) initUsersRoutes(api *echo.Group) {
-	users := api.Group("/users")
+	users := api.Group("/user")
 	{
 		auth := users.Group("/auth")
 		{
