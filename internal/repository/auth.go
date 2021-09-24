@@ -44,11 +44,33 @@ func (repo *AuthRepo) CreateUser(opts CreateUserOpts) (*domain.User, error) {
 		opts.Password,   // 4
 	)
 	if err != nil {
+		// User with passed username already exists
 		if err != sql.ErrNoRows {
 			return nil, errs.ErrUserAlreadyExists
 		}
+
 		return nil, err
 	}
 
 	return user.ToDomain(), nil
+}
+
+func (repo *AuthRepo) CreateSession(userID int64, token string) error {
+	const query = `
+		INSERT INTO
+			t_session (user_id, token)
+		VALUES
+			($1, $2)`
+
+	_, err := repo.DB.Exec(query, userID, token)
+	if err != nil {
+		// Session with passed token already exists
+		if err != sql.ErrNoRows {
+			return nil
+		}
+
+		return err
+	}
+
+	return nil
 }

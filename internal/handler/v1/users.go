@@ -18,12 +18,18 @@ func (h *Handler) initUsersRoutes(api *echo.Group) {
 		{
 			auth.POST("/sign-up", h.signUp)
 			auth.POST("/sign-in", h.signIn)
+			// TODO: [USER-AUTH]: middleware
 			auth.POST("/sign-out", h.signOut)
 		}
 	}
 }
 
-const minPasswordLength = 8
+const (
+	minUsernameLength = 4
+	maxUsernameLength = 32
+	minPasswordLength = 8
+	maxPasswordLength = 32
+)
 
 type signUpOpts struct {
 	FirstName  string `json:"first_name"`
@@ -41,14 +47,12 @@ func (opts *signUpOpts) Bind(c echo.Context) error {
 		return errors.New("empty first_name")
 	}
 
-	if len(opts.Username) == 0 {
-		return errors.New("empty username")
+	if !niceUsername(opts.Username) {
+		return errs.ErrInvalidUsernameLength
 	}
 
-	if len(opts.Password) < minPasswordLength {
-		return errors.New(fmt.Sprintf("short password: length: %v; required: %v",
-			len(opts.Password), minPasswordLength),
-		)
+	if !nicePassword(opts.Password) {
+		return errs.ErrInvalidPasswordLength
 	}
 
 	return nil
@@ -76,10 +80,60 @@ func (h *Handler) signUp(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"user": user})
 }
 
+type SignInOpts struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (opts *SignInOpts) Bind(c echo.Context) error {
+	if err := c.Bind(opts); err != nil {
+		return errors.New(fmt.Sprintf("can't bind: %v", err))
+	}
+
+	if !niceUsername(opts.Username) {
+		return errs.ErrInvalidUsernameLength
+	}
+
+	if !nicePassword(opts.Password) {
+		return errs.ErrInvalidPasswordLength
+	}
+
+	return nil
+}
+
 func (h *Handler) signIn(c echo.Context) error {
-	return c.JSON(http.StatusOK, "")
+	opts := &SignInOpts{}
+	if err := opts.Bind(c); err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	token, err := h.services.Auth.SignIn(service.SignInOpts{
+		Username: opts.Username,
+		Password: opts.Password,
+	})
+	if err != nil {
+		return errorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"token": token,
+	})
 }
 
 func (h *Handler) signOut(c echo.Context) error {
-	return c.JSON(http.StatusOK, "")
+	// TODO: [USER-AUTH]: implement sign-out logic
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"success": true,
+	})
+}
+
+func nicePassword(password string) bool {
+	length := len(password)
+	return minPasswordLength <= length && length <= maxPasswordLength
+}
+
+func niceUsername(username string) bool {
+	length := len(username)
+	return minUsernameLength <= length && length <= maxUsernameLength
 }

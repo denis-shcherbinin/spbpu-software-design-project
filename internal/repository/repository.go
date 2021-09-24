@@ -8,9 +8,11 @@ import (
 
 type Auth interface {
 	CreateUser(opts CreateUserOpts) (*domain.User, error)
+	CreateSession(userID int64, token string) error
 }
 
 type User interface {
+	GetIDByCredentials(username string, passwordHash string) (int64, error)
 }
 
 type Repository struct {

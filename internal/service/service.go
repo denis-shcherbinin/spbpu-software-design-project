@@ -8,6 +8,7 @@ import (
 
 type Auth interface {
 	SignUp(opts SignUpOpts) (*domain.User, error)
+	SignIn(opts SignInOpts) (string, error)
 }
 
 type User interface {
@@ -19,8 +20,14 @@ type Service struct {
 }
 
 func NewService(repo *repository.Repository, hasher hasher.Hasher) *Service {
+	authSvc := NewAuthService(NewAuthOpts{
+		AuthRepo: repo.Auth,
+		UserRepo: repo.User,
+		Hasher:   hasher,
+	})
+
 	return &Service{
-		Auth: NewAuthService(repo.Auth, hasher),
+		Auth: authSvc,
 		User: NewUserService(repo.User),
 	}
 }
