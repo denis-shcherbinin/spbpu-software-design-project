@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/pkg/hasher"
 )
@@ -51,13 +52,20 @@ type SignInOpts struct {
 	Password string
 }
 
-func (svc *AuthService) SignIn(opts SignInOpts) (int64, error) {
+func (svc *AuthService) SignIn(opts SignInOpts) (string, string, error) {
 	passwordHash := svc.Hasher.Hash(opts.Password)
 
-	userID, err := svc.UserRepo.GetIDByCredentials(opts.Username, passwordHash)
+	ok, err := svc.UserRepo.CheckByCredentials(opts.Username, passwordHash)
 	if err != nil {
-		return userID, err
+		return "", "", err
+	}
+	if !ok {
+		return "", "", errs.ErrUserNotFound
 	}
 
-	return userID, nil
+	return opts.Username, passwordHash, nil
+}
+
+func (svc *AuthService) CheckByCredentials(username, passwordHash string) (bool, error) {
+	return svc.UserRepo.CheckByCredentials(username, passwordHash)
 }

@@ -9,7 +9,7 @@ type Auth interface {
 }
 
 type User interface {
-	GetIDByCredentials(username string, passwordHash string) (int64, error)
+	CheckByCredentials(username, passwordHash string) (bool, error)
 }
 
 type Repository struct {

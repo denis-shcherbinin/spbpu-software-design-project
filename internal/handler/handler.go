@@ -1,10 +1,11 @@
 package handler
 
 import (
-	v1 "github.com/denis-shcherbinin/spbpu-software-design-project/internal/handler/v1"
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/service"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	v1 "github.com/denis-shcherbinin/spbpu-software-design-project/internal/handler/v1"
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/service"
 )
 
 type Handler struct {
@@ -24,9 +25,9 @@ type InitOpts struct {
 func (h *Handler) Init(opts InitOpts) *echo.Echo {
 	e := echo.New()
 
-	// TODO: add basic auth middleware
-
+	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	e.Use(middleware.Logger())
 
 	e.Debug = opts.Debug
 
