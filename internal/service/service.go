@@ -1,10 +1,37 @@
 package service
 
-import "github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
+import (
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
+	"github.com/denis-shcherbinin/spbpu-software-design-project/pkg/hasher"
+)
 
-type Service struct {
+type Auth interface {
+	SignUp(opts SignUpOpts) error
+	SignIn(opts SignInOpts) (int64, error)
 }
 
-func NewService(repo *repository.Repository) *Service {
-	return &Service{}
+type User interface {
+}
+
+type Service struct {
+	Auth Auth
+	User User
+}
+
+type NewServiceOpts struct {
+	Repo   *repository.Repository
+	Hasher hasher.Hasher
+}
+
+func NewService(opts NewServiceOpts) *Service {
+	authSvc := NewAuthService(NewAuthOpts{
+		AuthRepo: opts.Repo.Auth,
+		UserRepo: opts.Repo.User,
+		Hasher:   opts.Hasher,
+	})
+
+	return &Service{
+		Auth: authSvc,
+		User: NewUserService(opts.Repo.User),
+	}
 }
