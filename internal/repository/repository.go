@@ -2,13 +2,10 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
 )
 
 type Auth interface {
-	CreateUser(opts CreateUserOpts) (*domain.User, error)
-	CreateSession(userID int64, token string) error
+	CreateUser(opts CreateUserOpts) error
 }
 
 type User interface {

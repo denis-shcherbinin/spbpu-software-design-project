@@ -1,11 +1,13 @@
 package v1
 
 import (
+	"crypto/subtle"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/service"
@@ -18,8 +20,15 @@ func (h *Handler) initUsersRoutes(api *echo.Group) {
 		{
 			auth.POST("/sign-up", h.signUp)
 			auth.POST("/sign-in", h.signIn)
-			// TODO: [USER-AUTH]: middleware
-			auth.POST("/sign-out", h.signOut)
+
+			auth.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+				// Be careful to use constant time comparison to prevent timing attacks
+				if subtle.ConstantTimeCompare([]byte(username), []byte("joe")) == 1 &&
+					subtle.ConstantTimeCompare([]byte(password), []byte("secret")) == 1 {
+					return true, nil
+				}
+				return false, nil
+			}))
 		}
 	}
 }
@@ -64,7 +73,7 @@ func (h *Handler) signUp(c echo.Context) error {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
-	user, err := h.services.Auth.SignUp(service.SignUpOpts{
+	err := h.services.Auth.SignUp(service.SignUpOpts{
 		FirstName:  opts.FirstName,
 		SecondName: opts.SecondName,
 		Username:   opts.Username,
@@ -77,7 +86,9 @@ func (h *Handler) signUp(c echo.Context) error {
 		return errorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{"user": user})
+	return c.JSON(http.StatusCreated, echo.Map{
+		"success": true},
+	)
 }
 
 type SignInOpts struct {
@@ -107,7 +118,7 @@ func (h *Handler) signIn(c echo.Context) error {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
-	token, err := h.services.Auth.SignIn(service.SignInOpts{
+	userID, err := h.services.Auth.SignIn(service.SignInOpts{
 		Username: opts.Username,
 		Password: opts.Password,
 	})
@@ -115,16 +126,10 @@ func (h *Handler) signIn(c echo.Context) error {
 		return errorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"token": token,
-	})
-}
-
-func (h *Handler) signOut(c echo.Context) error {
-	// TODO: [USER-AUTH]: implement sign-out logic
+	c.Request().SetBasicAuth(opts.Username, opts.Password)
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"success": true,
+		"userID": userID,
 	})
 }
 

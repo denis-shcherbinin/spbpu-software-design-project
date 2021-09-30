@@ -48,7 +48,10 @@ func Run() {
 
 	passwordHasher := hasher.NewSHA1Hasher(opts.Auth.PasswordSalt)
 
-	services := service.NewService(repo, passwordHasher)
+	services := service.NewService(service.NewServiceOpts{
+		Repo:   repo,
+		Hasher: passwordHasher,
+	})
 
 	handlers := handler.NewHandler(services)
 	e := handlers.Init(handler.InitOpts{

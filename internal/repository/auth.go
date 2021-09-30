@@ -5,7 +5,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 )
@@ -27,7 +26,7 @@ type CreateUserOpts struct {
 	Password   string
 }
 
-func (repo *AuthRepo) CreateUser(opts CreateUserOpts) (*domain.User, error) {
+func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
 	const query = `
 		INSERT INTO 
 			t_user (first_name, second_name, username, password_hash)
@@ -46,27 +45,7 @@ func (repo *AuthRepo) CreateUser(opts CreateUserOpts) (*domain.User, error) {
 	if err != nil {
 		// User with passed username already exists
 		if err != sql.ErrNoRows {
-			return nil, errs.ErrUserAlreadyExists
-		}
-
-		return nil, err
-	}
-
-	return user.ToDomain(), nil
-}
-
-func (repo *AuthRepo) CreateSession(userID int64, token string) error {
-	const query = `
-		INSERT INTO
-			t_session (user_id, token)
-		VALUES
-			($1, $2)`
-
-	_, err := repo.DB.Exec(query, userID, token)
-	if err != nil {
-		// Session with passed token already exists
-		if err != sql.ErrNoRows {
-			return nil
+			return errs.ErrUserAlreadyExists
 		}
 
 		return err
