@@ -2,7 +2,7 @@
 
 **Денис Щербинин, гр. 3530202/90201.**  
 
-<img align="right" width="50%" src="./images/gopher-big-slice.png" alt="">  
+<img align="right" width="35%" src="./images/gopher-big-slice.png" alt="">  
 
 ## ToDo App REST API  
 
@@ -12,4 +12,4 @@
     - Регистрация
     - Вход в профиль
 2. Списки задач ***(todo-list)***
-3. Задачи к определённому списку ***(todo-item)***
+3. Задачи к определённому списку ***(todo-item)***  
