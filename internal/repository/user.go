@@ -18,7 +18,7 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 
 func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, error) {
 	const query = `
-		SELECT DISTINCT
+		SELECT
 			EXISTS
 				(
 					SELECT 

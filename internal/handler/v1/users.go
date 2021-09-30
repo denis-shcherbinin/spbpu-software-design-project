@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -71,7 +70,7 @@ func (h *Handler) signUp(c echo.Context) error {
 	})
 	if err != nil {
 		if err == errs.ErrUserAlreadyExists {
-			return errorResponse(c, http.StatusBadRequest, err)
+			return errorResponse(c, http.StatusConflict, err)
 		}
 		return errorResponse(c, http.StatusInternalServerError, err)
 	}
@@ -119,9 +118,7 @@ func (h *Handler) signIn(c echo.Context) error {
 		return errorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	// TODO: [User-Auth]: refactor Authorization setter
-	c.Response().Header().Set("Authorization",
-		"Basic "+base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", username, passwordHash))))
+	setBasicAuthHeader(c, username, passwordHash)
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"success": true,
