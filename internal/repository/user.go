@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -14,24 +16,28 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 	}
 }
 
-func (repo *UserRepo) GetIDByCredentials(username string, passwordHash string) (int64, error) {
+func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, error) {
 	const query = `
-		SELECT
-			id
-		FROM
-			t_user
-		WHERE
-			username=$1
-				AND
-			password_hash=$2`
+		SELECT DISTINCT
+			EXISTS
+				(
+					SELECT 
+						COUNT(id)
+					FROM
+						t_user
+					WHERE
+						username = $1
+							AND
+						password_hash = $2
+				) AS exists`
 
-	var userID int64
-
-	row := repo.DB.QueryRow(query, username, passwordHash)
-	err := row.Scan(&userID)
+	var exists bool
+	quotedUsername := fmt.Sprintf("'%s'", username)
+	quotedPasswordHash := fmt.Sprintf("'%s'", passwordHash)
+	err := repo.DB.Get(&exists, query, quotedUsername, quotedPasswordHash)
 	if err != nil {
-		return 0, err
+		return false, err
 	}
 
-	return userID, nil
+	return exists, nil
 }

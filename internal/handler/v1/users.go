@@ -1,13 +1,12 @@
 package v1
 
 import (
-	"crypto/subtle"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/service"
@@ -20,15 +19,6 @@ func (h *Handler) initUsersRoutes(api *echo.Group) {
 		{
 			auth.POST("/sign-up", h.signUp)
 			auth.POST("/sign-in", h.signIn)
-
-			auth.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-				// Be careful to use constant time comparison to prevent timing attacks
-				if subtle.ConstantTimeCompare([]byte(username), []byte("joe")) == 1 &&
-					subtle.ConstantTimeCompare([]byte(password), []byte("secret")) == 1 {
-					return true, nil
-				}
-				return false, nil
-			}))
 		}
 	}
 }
@@ -118,18 +108,23 @@ func (h *Handler) signIn(c echo.Context) error {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
-	userID, err := h.services.Auth.SignIn(service.SignInOpts{
+	username, passwordHash, err := h.services.Auth.SignIn(service.SignInOpts{
 		Username: opts.Username,
 		Password: opts.Password,
 	})
 	if err != nil {
+		if err == errs.ErrUserNotFound {
+			return errorResponse(c, http.StatusForbidden, err)
+		}
 		return errorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	c.Request().SetBasicAuth(opts.Username, opts.Password)
+	// TODO: [User-Auth]: refactor Authorization setter
+	c.Response().Header().Set("Authorization",
+		"Basic "+base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", username, passwordHash))))
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"userID": userID,
+		"success": true,
 	})
 }
 

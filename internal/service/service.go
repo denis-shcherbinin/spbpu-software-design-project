@@ -7,7 +7,8 @@ import (
 
 type Auth interface {
 	SignUp(opts SignUpOpts) error
-	SignIn(opts SignInOpts) (int64, error)
+	SignIn(opts SignInOpts) (string, string, error)
+	CheckByCredentials(username, passwordHash string) (bool, error)
 }
 
 type User interface {
