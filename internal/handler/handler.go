@@ -31,7 +31,7 @@ func (h *Handler) Init(opts InitOpts) *echo.Echo {
 
 	e.Debug = opts.Debug
 
-	e.GET("ping", Ping)
+	e.GET("/ping", Ping)
 
 	h.initApi(e)
 
