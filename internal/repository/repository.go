@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 	"github.com/jmoiron/sqlx"
+
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 )
 
 type Auth interface {

@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
+
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 )
 
 type ListRepo struct {
