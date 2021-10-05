@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/pkg/hasher"
 )
@@ -8,15 +9,24 @@ import (
 type Auth interface {
 	SignUp(opts SignUpOpts) error
 	SignIn(opts SignInOpts) (string, string, error)
-	CheckByCredentials(username, passwordHash string) (bool, error)
 }
 
 type User interface {
+	GetIDByCredentials(username, passwordHash string) (int64, error)
+}
+
+type List interface {
+	Create(opts CreateListOpts) error
+	GetAll(userID int64) ([]domain.List, error)
+	GetByID(userID, listID int64) (*domain.List, error)
+	Update(userID, listID int64, opts UpdateListOpts) error
+	DeleteByID(userID, listID int64) error
 }
 
 type Service struct {
 	Auth Auth
 	User User
+	List List
 }
 
 type NewServiceOpts struct {
@@ -34,5 +44,6 @@ func NewService(opts NewServiceOpts) *Service {
 	return &Service{
 		Auth: authSvc,
 		User: NewUserService(opts.Repo.User),
+		List: NewListService(opts.Repo.List),
 	}
 }

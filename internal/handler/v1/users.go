@@ -29,6 +29,11 @@ const (
 	maxPasswordLength = 32
 )
 
+var (
+	ErrInvalidUsernameLength = errors.New("invalid username length")
+	ErrInvalidPasswordLength = errors.New("invalid password length")
+)
+
 type signUpOpts struct {
 	FirstName  string `json:"first_name"`
 	SecondName string `json:"second_name"`
@@ -46,11 +51,11 @@ func (opts *signUpOpts) Bind(c echo.Context) error {
 	}
 
 	if !niceUsername(opts.Username) {
-		return errs.ErrInvalidUsernameLength
+		return ErrInvalidUsernameLength
 	}
 
 	if !nicePassword(opts.Password) {
-		return errs.ErrInvalidPasswordLength
+		return ErrInvalidPasswordLength
 	}
 
 	return nil
@@ -91,11 +96,11 @@ func (opts *SignInOpts) Bind(c echo.Context) error {
 	}
 
 	if !niceUsername(opts.Username) {
-		return errs.ErrInvalidUsernameLength
+		return ErrInvalidUsernameLength
 	}
 
 	if !nicePassword(opts.Password) {
-		return errs.ErrInvalidPasswordLength
+		return ErrInvalidPasswordLength
 	}
 
 	return nil
