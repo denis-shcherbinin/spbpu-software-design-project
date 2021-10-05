@@ -11,3 +11,12 @@ func NewUserService(userRepo repository.User) *UserService {
 		UserRepo: userRepo,
 	}
 }
+
+func (svc *UserService) GetIDByCredentials(username, passwordHash string) (int64, error) {
+	userID, err := svc.UserRepo.GetIDByCredentials(username, passwordHash)
+	if err != nil {
+		return 0, err
+	}
+
+	return userID, nil
+}

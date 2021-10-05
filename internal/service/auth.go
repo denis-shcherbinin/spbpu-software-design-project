@@ -65,7 +65,3 @@ func (svc *AuthService) SignIn(opts SignInOpts) (string, string, error) {
 
 	return opts.Username, passwordHash, nil
 }
-
-func (svc *AuthService) CheckByCredentials(username, passwordHash string) (bool, error) {
-	return svc.UserRepo.CheckByCredentials(username, passwordHash)
-}

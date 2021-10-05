@@ -8,15 +8,20 @@ import (
 type Auth interface {
 	SignUp(opts SignUpOpts) error
 	SignIn(opts SignInOpts) (string, string, error)
-	CheckByCredentials(username, passwordHash string) (bool, error)
 }
 
 type User interface {
+	GetIDByCredentials(username, passwordHash string) (int64, error)
+}
+
+type List interface {
+	Create(opts CreateListOpts) error
 }
 
 type Service struct {
 	Auth Auth
 	User User
+	List List
 }
 
 type NewServiceOpts struct {
@@ -34,5 +39,6 @@ func NewService(opts NewServiceOpts) *Service {
 	return &Service{
 		Auth: authSvc,
 		User: NewUserService(opts.Repo.User),
+		List: NewListService(opts.Repo.List),
 	}
 }
