@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/pkg/hasher"
 )
@@ -16,6 +17,9 @@ type User interface {
 
 type List interface {
 	Create(opts CreateListOpts) error
+	GetAll(userID int64) ([]domain.List, error)
+	GetByID(userID, listID int64) (*domain.List, error)
+	DeleteByID(userID, listID int64) error
 }
 
 type Service struct {

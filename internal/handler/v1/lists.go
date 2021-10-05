@@ -4,11 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/service"
 )
 
@@ -16,10 +17,10 @@ func (h *Handler) initTodoListsRoutes(api *echo.Group) {
 	lists := api.Group("/lists", middleware.BasicAuth(h.basicAuthValidator))
 	{
 		lists.POST("/", h.createList)
-		lists.GET("/", h.getAllLists)
-		lists.GET("/:id", h.getList)
+		lists.GET("/", h.getAllLists, noBody)
+		lists.GET("/:id", h.getList, noBody)
 		lists.PUT("/:id", h.updateList)
-		lists.DELETE("/:id", h.deleteList)
+		lists.DELETE("/:id", h.deleteList, noBody)
 	}
 }
 
@@ -57,9 +58,6 @@ func (h *Handler) createList(c echo.Context) error {
 		Description: opts.Description,
 	})
 	if err != nil {
-		if err == errs.ErrListTitleAlreadyExists {
-			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("%v: %v", err, opts.Title))
-		}
 		return errorResponse(c, http.StatusInternalServerError, err)
 	}
 
@@ -69,11 +67,41 @@ func (h *Handler) createList(c echo.Context) error {
 }
 
 func (h *Handler) getAllLists(c echo.Context) error {
-	return nil
+	userID, err := h.getUserID(c)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	lists, err := h.services.List.GetAll(userID)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, lists)
 }
 
 func (h *Handler) getList(c echo.Context) error {
-	return nil
+	listID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	userID, err := h.getUserID(c)
+	if err != nil {
+		if err == errs.ErrListNotFound {
+			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("%v: %v", err, listID))
+		}
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	list, err := h.services.List.GetByID(userID, listID)
+	if err != nil {
+		return errorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"list": list,
+	})
 }
 
 func (h *Handler) updateList(c echo.Context) error {
@@ -81,5 +109,22 @@ func (h *Handler) updateList(c echo.Context) error {
 }
 
 func (h *Handler) deleteList(c echo.Context) error {
-	return nil
+	listID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	userID, err := h.getUserID(c)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	err = h.services.List.DeleteByID(userID, listID)
+	if err != nil {
+		return errorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"success": true,
+	})
 }

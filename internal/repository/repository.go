@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,6 +16,9 @@ type User interface {
 
 type List interface {
 	Create(opts CreateListOpts) error
+	GetAll(userID int64) ([]entity.List, error)
+	GetByID(userID, listID int64) (*entity.List, error)
+	DeleteByID(userID, listID int64) error
 }
 
 type Repository struct {

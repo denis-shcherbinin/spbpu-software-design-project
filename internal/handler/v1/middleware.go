@@ -3,6 +3,9 @@ package v1
 import (
 	"encoding/base64"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 
@@ -12,6 +15,29 @@ import (
 const (
 	userIDCtx = "userID"
 )
+
+// noBody middleware checks that request has empty body
+func noBody(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		r := c.Request()
+
+		if r.ContentLength > 0 {
+			return echo.NewHTTPError(http.StatusRequestEntityTooLarge, "request body size must be zero")
+		}
+
+		body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1))
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("can't read request body: %v", err))
+		}
+		if len(body) > 0 {
+			return echo.NewHTTPError(http.StatusRequestEntityTooLarge, "request body size must be zero")
+		}
+
+		r.Body = http.NoBody
+
+		return next(c)
+	}
+}
 
 func setBasicAuthHeader(c echo.Context, username, passwordHash string) {
 	c.Response().Header().Set("Authorization", fmt.Sprintf("Basic %s", basicAuth(username, passwordHash)))
