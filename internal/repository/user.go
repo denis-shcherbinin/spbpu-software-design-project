@@ -15,7 +15,7 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 }
 
 func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, error) {
-	const query = `
+	query := `
 		SELECT
 			EXISTS
 				(
@@ -39,7 +39,7 @@ func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, e
 }
 
 func (repo *UserRepo) GetIDByCredentials(username, passwordHash string) (int64, error) {
-	const query = `
+	query := `
 			SELECT 
 				id
 			FROM

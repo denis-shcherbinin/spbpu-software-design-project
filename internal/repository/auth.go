@@ -27,7 +27,7 @@ type CreateUserOpts struct {
 }
 
 func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
-	const query = `
+	query := `
 		INSERT INTO 
 			t_user (first_name, second_name, username, password_hash)
 		VALUES

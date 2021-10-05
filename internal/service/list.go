@@ -52,6 +52,18 @@ func (svc *ListService) GetByID(userID, listID int64) (*domain.List, error) {
 	return list.ToDomain(), nil
 }
 
+type UpdateListOpts struct {
+	Title       string
+	Description string
+}
+
+func (svc *ListService) Update(userID, listID int64, opts UpdateListOpts) error {
+	return svc.ListRepo.Update(userID, listID, repository.UpdateListOpts{
+		Title:       opts.Title,
+		Description: opts.Description,
+	})
+}
+
 func (svc *ListService) DeleteByID(userID, listID int64) error {
 	return svc.ListRepo.DeleteByID(userID, listID)
 }

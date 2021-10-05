@@ -19,6 +19,7 @@ type List interface {
 	Create(opts CreateListOpts) error
 	GetAll(userID int64) ([]domain.List, error)
 	GetByID(userID, listID int64) (*domain.List, error)
+	Update(userID, listID int64, opts UpdateListOpts) error
 	DeleteByID(userID, listID int64) error
 }
 

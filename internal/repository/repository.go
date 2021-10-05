@@ -18,6 +18,7 @@ type List interface {
 	Create(opts CreateListOpts) error
 	GetAll(userID int64) ([]entity.List, error)
 	GetByID(userID, listID int64) (*entity.List, error)
+	Update(userID, listID int64, opts UpdateListOpts) error
 	DeleteByID(userID, listID int64) error
 }
 
