@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 )
@@ -32,7 +34,7 @@ func (svc *ListService) Create(opts CreateListOpts) error {
 func (svc *ListService) GetAll(userID int64) ([]domain.List, error) {
 	lists, err := svc.ListRepo.GetAll(userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ListService: %v", err)
 	}
 
 	result := make([]domain.List, len(lists))
@@ -46,7 +48,7 @@ func (svc *ListService) GetAll(userID int64) ([]domain.List, error) {
 func (svc *ListService) GetByID(userID, listID int64) (*domain.List, error) {
 	list, err := svc.ListRepo.GetByID(userID, listID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ListService: %v", err)
 	}
 
 	return list.ToDomain(), nil
@@ -58,12 +60,16 @@ type UpdateListOpts struct {
 }
 
 func (svc *ListService) Update(userID, listID int64, opts UpdateListOpts) error {
-	return svc.ListRepo.Update(userID, listID, repository.UpdateListOpts{
+	err := svc.ListRepo.Update(userID, listID, repository.UpdateListOpts{
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
+
+	return fmt.Errorf("ListService: %v", err)
 }
 
 func (svc *ListService) DeleteByID(userID, listID int64) error {
-	return svc.ListRepo.DeleteByID(userID, listID)
+	err := svc.ListRepo.DeleteByID(userID, listID)
+
+	return fmt.Errorf("ListService: %v", err)
 }

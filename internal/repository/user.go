@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -37,7 +39,7 @@ func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, e
 		Scan(&exists)
 
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("UserRepo: %v", err)
 	}
 
 	return exists, nil
@@ -55,9 +57,14 @@ func (repo *UserRepo) GetIDByCredentials(username, passwordHash string) (int64, 
 				password_hash = $2`
 
 	var id int64
-	row := repo.DB.QueryRow(query, username, passwordHash)
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+
+	err := repo.DB.QueryRow(query,
+		username,
+		passwordHash).
+		Scan(&id)
+
+	if err != nil {
+		return 0, fmt.Errorf("UserRepo: %v", err)
 	}
 
 	return id, nil

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
@@ -41,10 +42,10 @@ func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
 	if err != nil {
 		// User with passed username already exists
 		if err != sql.ErrNoRows {
-			return errs.ErrUserAlreadyExists
+			return fmt.Errorf("AuthRepo: %v", errs.ErrUserAlreadyExists)
 		}
 
-		return err
+		return fmt.Errorf("AuthRepo: %v", err)
 	}
 
 	return nil
