@@ -2,11 +2,11 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 )
 
 type AuthRepo struct {
@@ -26,17 +26,16 @@ type CreateUserOpts struct {
 	Password   string
 }
 
+// CreateUser create user with passed opts
+// It returns errs.ErrUserAlreadyExists or other internal errors.
 func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
 	query := `
 		INSERT INTO 
 			t_user (first_name, second_name, username, password_hash)
 		VALUES
-			($1, $2, $3, $4)
-		RETURNING
-			*`
+			($1, $2, $3, $4)`
 
-	var user entity.User
-	err := repo.DB.Get(&user, query,
+	_, err := repo.DB.Exec(query,
 		opts.FirstName,  // 1
 		opts.SecondName, // 2
 		opts.Username,   // 3
@@ -45,10 +44,10 @@ func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
 	if err != nil {
 		// User with passed username already exists
 		if err != sql.ErrNoRows {
-			return errs.ErrUserAlreadyExists
+			return fmt.Errorf("AuthRepo: %v", errs.ErrUserAlreadyExists)
 		}
 
-		return err
+		return fmt.Errorf("AuthRepo: %v", err)
 	}
 
 	return nil
