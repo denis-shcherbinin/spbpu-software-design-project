@@ -53,8 +53,8 @@ func (svc *ListService) GetByID(userID, listID int64) (*domain.List, error) {
 }
 
 type UpdateListOpts struct {
-	Title       string
-	Description string
+	Title       *string
+	Description *string
 }
 
 func (svc *ListService) Update(userID, listID int64, opts UpdateListOpts) error {

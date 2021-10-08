@@ -105,8 +105,8 @@ func (h *Handler) getList(c echo.Context) error {
 }
 
 type updateListOpts struct {
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
 }
 
 func (opts *updateListOpts) Bind(c echo.Context) error {
@@ -114,8 +114,14 @@ func (opts *updateListOpts) Bind(c echo.Context) error {
 		return fmt.Errorf("can't bind: %v", err)
 	}
 
-	if len(opts.Title) == 0 && len(opts.Description) == 0 {
-		return errors.New("empty list update input")
+	if opts.Title == nil && opts.Description == nil {
+		return errors.New("empty list update input: all parameters = null")
+	}
+
+	if opts.Title != nil && opts.Description != nil {
+		if len(*opts.Title) == 0 && len(*opts.Description) == 0 {
+			return errors.New("empty list update input")
+		}
 	}
 
 	return nil

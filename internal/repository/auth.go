@@ -6,7 +6,6 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
-	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository/entity"
 )
 
 type AuthRepo struct {
@@ -31,12 +30,9 @@ func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
 		INSERT INTO 
 			t_user (first_name, second_name, username, password_hash)
 		VALUES
-			($1, $2, $3, $4)
-		RETURNING
-			*`
+			($1, $2, $3, $4)`
 
-	var user entity.User
-	err := repo.DB.Get(&user, query,
+	_, err := repo.DB.Exec(query,
 		opts.FirstName,  // 1
 		opts.SecondName, // 2
 		opts.Username,   // 3
