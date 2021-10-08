@@ -1,6 +1,10 @@
 package service
 
-import "github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
+import (
+	"fmt"
+
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
+)
 
 type UserService struct {
 	UserRepo repository.User
@@ -12,10 +16,12 @@ func NewUserService(userRepo repository.User) *UserService {
 	}
 }
 
+// GetIDByCredentials returns user id or
+// Error if something wrong happened.
 func (svc *UserService) GetIDByCredentials(username, passwordHash string) (int64, error) {
 	userID, err := svc.UserRepo.GetIDByCredentials(username, passwordHash)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("UserService: %v", err)
 	}
 
 	return userID, nil

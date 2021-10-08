@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
@@ -26,16 +27,19 @@ type CreateListOpts struct {
 	Description string
 }
 
+// Create creates list to user with passed id
+// It returns internal errors.
 func (repo *ListRepo) Create(opts CreateListOpts) error {
 	tx, err := repo.DB.Beginx()
 	if err != nil {
-		return err
+		return fmt.Errorf("ListRepo: %v", err)
 	}
 
 	listQuery := `
 		INSERT INTO
 			t_list(title, description)
-		VALUES($1, $2)
+		VALUES
+		    ($1, $2)
 		RETURNING
 			id`
 
@@ -43,27 +47,30 @@ func (repo *ListRepo) Create(opts CreateListOpts) error {
 	err = tx.Get(&listID, listQuery, opts.Title, opts.Description)
 	if err != nil {
 		_ = tx.Rollback()
-		return err
+		return fmt.Errorf("ListRepo: %v", err)
 	}
 
 	userListQuery := `
 		INSERT INTO
 			t_user_list(user_id, list_id)
-		VALUES($1, $2)`
+		VALUES
+		    ($1, $2)`
 
 	_, err = tx.Exec(userListQuery, opts.UserID, listID)
 	if err != nil {
 		_ = tx.Rollback()
-		return err
+		return fmt.Errorf("ListRepo: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return fmt.Errorf("ListRepo: %v", err)
 	}
 
 	return nil
 }
 
+// GetAll forms slice of all user lists
+// It returns slice of lists and internal errors.
 func (repo *ListRepo) GetAll(userID int64) ([]entity.List, error) {
 	query := `
 		SELECT
@@ -73,10 +80,10 @@ func (repo *ListRepo) GetAll(userID int64) ([]entity.List, error) {
 			l.created_at
 		FROM
 			t_list l
-				INNER JOIN
+		INNER JOIN
 			t_user_list ul
-				ON 
-					l.id = ul.list_id
+		ON 
+			l.id = ul.list_id
 		WHERE
 			ul.user_id = $1`
 
@@ -84,12 +91,13 @@ func (repo *ListRepo) GetAll(userID int64) ([]entity.List, error) {
 
 	err := repo.DB.Select(&lists, query, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ListRepo: %v", err)
 	}
 
 	return lists, nil
 }
 
+// GetByID returns user list with passed id.
 func (repo *ListRepo) GetByID(userID, listID int64) (*entity.List, error) {
 	query := `
 		SELECT
@@ -111,11 +119,11 @@ func (repo *ListRepo) GetByID(userID, listID int64) (*entity.List, error) {
 	var list entity.List
 	err := repo.DB.Get(&list, query, userID, listID)
 	if err != nil {
-		// list with such id doesn't exists
+		// list with such id doesn't exist
 		if err == sql.ErrNoRows {
-			return nil, errs.ErrListNotFound
+			return nil, fmt.Errorf("ListRepo: %v", errs.ErrListNotFound)
 		}
-		return nil, err
+		return nil, fmt.Errorf("ListRepo: %v", err)
 	}
 
 	return &list, nil
@@ -126,6 +134,8 @@ type UpdateListOpts struct {
 	Description *string
 }
 
+// Update updates user list with passed id
+// It returns errs.ErrListNotFound no rows affected and internal errors.
 func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 	query := `
 		UPDATE
@@ -152,24 +162,26 @@ func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 		listID,           // 4
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("ListRepo: %v", err)
 	}
 	count, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return fmt.Errorf("ListRepo: %v", err)
 	}
 	if count != 1 {
-		return errs.ErrListNotFound
+		return fmt.Errorf("ListRepo: %v", errs.ErrListNotFound)
 	}
 
 	return nil
 }
 
+// DeleteByID removes user list with passed id
+// It returns internal errors.
 func (repo *ListRepo) DeleteByID(userID, listID int64) error {
 	query := `
 		DELETE FROM
 			t_list l
-				USING
+		USING
 			t_user_list ul
 		WHERE
 			l.id = ul.list_id
@@ -180,7 +192,7 @@ func (repo *ListRepo) DeleteByID(userID, listID int64) error {
 
 	_, err := repo.DB.Exec(query, userID, listID)
 	if err != nil {
-		return err
+		return fmt.Errorf("ListRepo: %v", err)
 	}
 
 	return nil

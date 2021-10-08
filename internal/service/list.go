@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 )
@@ -21,18 +23,24 @@ type CreateListOpts struct {
 	Description string
 }
 
+// Create creates a new list
+// It returns errors.
 func (svc *ListService) Create(opts CreateListOpts) error {
-	return svc.ListRepo.Create(repository.CreateListOpts{
+	err :=  svc.ListRepo.Create(repository.CreateListOpts{
 		UserID:      opts.UserID,
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
+
+	return fmt.Errorf("ListService: %v", err)
 }
 
+// GetAll returns all user lists or
+// Errors if something wrong happened.
 func (svc *ListService) GetAll(userID int64) ([]domain.List, error) {
 	lists, err := svc.ListRepo.GetAll(userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ListService: %v", err)
 	}
 
 	result := make([]domain.List, len(lists))
@@ -43,10 +51,12 @@ func (svc *ListService) GetAll(userID int64) ([]domain.List, error) {
 	return result, nil
 }
 
+// GetByID returns user list by id or
+// Errors if something wrong happened.
 func (svc *ListService) GetByID(userID, listID int64) (*domain.List, error) {
 	list, err := svc.ListRepo.GetByID(userID, listID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ListService: %v", err)
 	}
 
 	return list.ToDomain(), nil
@@ -57,13 +67,21 @@ type UpdateListOpts struct {
 	Description *string
 }
 
+// Update updates user list by id or
+// Errors if something wrong happened.
 func (svc *ListService) Update(userID, listID int64, opts UpdateListOpts) error {
-	return svc.ListRepo.Update(userID, listID, repository.UpdateListOpts{
+	err := svc.ListRepo.Update(userID, listID, repository.UpdateListOpts{
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
+
+	return fmt.Errorf("ListService: %v", err)
 }
 
+// DeleteByID removes user list by id or
+// Errors if something wrong happened.
 func (svc *ListService) DeleteByID(userID, listID int64) error {
-	return svc.ListRepo.DeleteByID(userID, listID)
+	err := svc.ListRepo.DeleteByID(userID, listID)
+
+	return fmt.Errorf("ListService: %v", err)
 }
