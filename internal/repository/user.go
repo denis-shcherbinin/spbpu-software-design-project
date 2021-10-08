@@ -18,20 +18,25 @@ func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, e
 	query := `
 		SELECT
 			EXISTS
-				(
-					SELECT 
-						COUNT(id)
-					FROM
-						t_user
-					WHERE
-						username = $1
-							AND
-						password_hash = $2
-				) AS exists`
+			(
+				SELECT 
+					COUNT(id)
+				FROM
+					t_user
+				WHERE
+					username = $1
+						AND
+					password_hash = $2
+			) AS exists`
 
 	var exists bool
-	row := repo.DB.QueryRow(query, username, passwordHash)
-	if err := row.Scan(&exists); err != nil {
+
+	err := repo.DB.QueryRow(query,
+		username,
+		passwordHash).
+		Scan(&exists)
+
+	if err != nil {
 		return false, err
 	}
 
