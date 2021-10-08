@@ -26,6 +26,8 @@ type CreateUserOpts struct {
 	Password   string
 }
 
+// CreateUser create user with passed opts
+// It returns errs.ErrUserAlreadyExists or other internal errors.
 func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
 	query := `
 		INSERT INTO 

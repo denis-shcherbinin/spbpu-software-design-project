@@ -23,14 +23,20 @@ type CreateListOpts struct {
 	Description string
 }
 
+// Create creates a new list
+// It returns errors.
 func (svc *ListService) Create(opts CreateListOpts) error {
-	return svc.ListRepo.Create(repository.CreateListOpts{
+	err :=  svc.ListRepo.Create(repository.CreateListOpts{
 		UserID:      opts.UserID,
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
+
+	return fmt.Errorf("ListService: %v", err)
 }
 
+// GetAll returns all user lists or
+// Errors if something wrong happened.
 func (svc *ListService) GetAll(userID int64) ([]domain.List, error) {
 	lists, err := svc.ListRepo.GetAll(userID)
 	if err != nil {
@@ -45,6 +51,8 @@ func (svc *ListService) GetAll(userID int64) ([]domain.List, error) {
 	return result, nil
 }
 
+// GetByID returns user list by id or
+// Errors if something wrong happened.
 func (svc *ListService) GetByID(userID, listID int64) (*domain.List, error) {
 	list, err := svc.ListRepo.GetByID(userID, listID)
 	if err != nil {
@@ -59,6 +67,8 @@ type UpdateListOpts struct {
 	Description *string
 }
 
+// Update updates user list by id or
+// Errors if something wrong happened.
 func (svc *ListService) Update(userID, listID int64, opts UpdateListOpts) error {
 	err := svc.ListRepo.Update(userID, listID, repository.UpdateListOpts{
 		Title:       opts.Title,
@@ -68,6 +78,8 @@ func (svc *ListService) Update(userID, listID int64, opts UpdateListOpts) error 
 	return fmt.Errorf("ListService: %v", err)
 }
 
+// DeleteByID removes user list by id or
+// Errors if something wrong happened.
 func (svc *ListService) DeleteByID(userID, listID int64) error {
 	err := svc.ListRepo.DeleteByID(userID, listID)
 

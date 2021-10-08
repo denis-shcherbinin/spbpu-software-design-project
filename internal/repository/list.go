@@ -27,6 +27,8 @@ type CreateListOpts struct {
 	Description string
 }
 
+// Create creates list to user with passed id
+// It returns internal errors.
 func (repo *ListRepo) Create(opts CreateListOpts) error {
 	tx, err := repo.DB.Beginx()
 	if err != nil {
@@ -67,6 +69,8 @@ func (repo *ListRepo) Create(opts CreateListOpts) error {
 	return nil
 }
 
+// GetAll forms slice of all user lists
+// It returns slice of lists and internal errors.
 func (repo *ListRepo) GetAll(userID int64) ([]entity.List, error) {
 	query := `
 		SELECT
@@ -93,6 +97,7 @@ func (repo *ListRepo) GetAll(userID int64) ([]entity.List, error) {
 	return lists, nil
 }
 
+// GetByID returns user list with passed id.
 func (repo *ListRepo) GetByID(userID, listID int64) (*entity.List, error) {
 	query := `
 		SELECT
@@ -129,6 +134,8 @@ type UpdateListOpts struct {
 	Description *string
 }
 
+// Update updates user list with passed id
+// It returns errs.ErrListNotFound no rows affected and internal errors.
 func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 	query := `
 		UPDATE
@@ -168,6 +175,8 @@ func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 	return nil
 }
 
+// DeleteByID removes user list with passed id
+// It returns internal errors.
 func (repo *ListRepo) DeleteByID(userID, listID int64) error {
 	query := `
 		DELETE FROM

@@ -1,9 +1,12 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 )
 
 type UserRepo struct {
@@ -16,6 +19,8 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 	}
 }
 
+// CheckByCredentials checks the existence of the user with passed credentials
+// It returns bool and internal errors.
 func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, error) {
 	query := `
 		SELECT
@@ -45,6 +50,8 @@ func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, e
 	return exists, nil
 }
 
+// GetIDByCredentials returns userID if user with passed credentials exists
+// It returns errs.ErrUserNotFound if user doesn't exist and internal errors.
 func (repo *UserRepo) GetIDByCredentials(username, passwordHash string) (int64, error) {
 	query := `
 			SELECT 
@@ -64,6 +71,9 @@ func (repo *UserRepo) GetIDByCredentials(username, passwordHash string) (int64, 
 		Scan(&id)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, errs.ErrUserNotFound
+		}
 		return 0, fmt.Errorf("UserRepo: %v", err)
 	}
 

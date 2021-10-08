@@ -16,6 +16,8 @@ func NewUserService(userRepo repository.User) *UserService {
 	}
 }
 
+// GetIDByCredentials returns user id or
+// Error if something wrong happened.
 func (svc *UserService) GetIDByCredentials(username, passwordHash string) (int64, error) {
 	userID, err := svc.UserRepo.GetIDByCredentials(username, passwordHash)
 	if err != nil {
