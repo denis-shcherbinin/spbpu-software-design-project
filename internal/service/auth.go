@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/pkg/hasher"
@@ -42,7 +44,7 @@ func (svc *AuthService) SignUp(opts SignUpOpts) error {
 		Password:   svc.Hasher.Hash(opts.Password),
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("AuthService: %v", err)
 	}
 
 	return nil
@@ -59,10 +61,10 @@ func (svc *AuthService) SignIn(opts SignInOpts) (string, string, error) {
 
 	ok, err := svc.UserRepo.CheckByCredentials(opts.Username, passwordHash)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("AuthService: %v", err)
 	}
 	if !ok {
-		return "", "", errs.ErrUserNotFound
+		return "", "", fmt.Errorf("AuthService: %v", errs.ErrUserNotFound)
 	}
 
 	return opts.Username, passwordHash, nil
