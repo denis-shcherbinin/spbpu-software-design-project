@@ -1,7 +1,0 @@
-BEGIN;
-
-DROP TABLE IF EXISTS t_user_list;
-
-DROP TABLE IF EXISTS t_list;
-
-COMMIT;

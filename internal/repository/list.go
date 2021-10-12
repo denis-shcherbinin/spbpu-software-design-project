@@ -29,7 +29,7 @@ type CreateListOpts struct {
 func (repo *ListRepo) Create(userID int64, opts CreateListOpts) error {
 	tx, err := repo.DB.Beginx()
 	if err != nil {
-		return fmt.Errorf("ListRepo: %v", err)
+		return err
 	}
 
 	listQuery := `
@@ -44,7 +44,6 @@ func (repo *ListRepo) Create(userID int64, opts CreateListOpts) error {
 	err = tx.Get(&listID, listQuery, opts.Title, opts.Description)
 	if err != nil {
 		_ = tx.Rollback()
-
 		return err
 	}
 
@@ -88,7 +87,7 @@ func (repo *ListRepo) GetAll(userID int64) ([]entity.List, error) {
 
 	err := repo.DB.Select(&lists, query, userID)
 	if err != nil {
-		return nil, fmt.Errorf("ListRepo: %v", err)
+		return nil, err
 	}
 
 	return lists, nil
@@ -118,9 +117,9 @@ func (repo *ListRepo) GetByID(userID, listID int64) (*entity.List, error) {
 	if err != nil {
 		// list with such id doesn't exist
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("ListRepo: %v", errs.ErrListNotFound)
+			return nil, errs.ErrListNotFound
 		}
-		return nil, fmt.Errorf("ListRepo: %v", err)
+		return nil, err
 	}
 
 	return &list, nil
@@ -138,7 +137,7 @@ func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 			t_list l
 		SET
 			title 		  = COALESCE($1, title),
-			description = COALESCE($2, description)
+			description   = COALESCE($2, description)
 		FROM 
 			t_user_list ul
 		WHERE
@@ -158,14 +157,7 @@ func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 		listID,           // 4
 	)
 	if err != nil {
-		return fmt.Errorf("ListRepo: %v", err)
-	}
-	count, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("ListRepo: %v", err)
-	}
-	if count != 1 {
-		return fmt.Errorf("ListRepo: %v", errs.ErrListNotFound)
+		return err
 	}
 	count, err := result.RowsAffected()
 	if err != nil {
@@ -198,7 +190,7 @@ func (repo *ListRepo) DeleteByID(userID, listID int64) error {
 	}
 	count, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("ListRepo: %v", err)
+		return err
 	}
 	if count != 1 {
 		return errs.ErrListNotFound
