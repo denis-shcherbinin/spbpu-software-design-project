@@ -18,21 +18,23 @@ func NewListService(listRepo repository.List) *ListService {
 }
 
 type CreateListOpts struct {
-	UserID      int64
 	Title       string
 	Description string
 }
 
 // Create creates a new list
 // It returns errors.
-func (svc *ListService) Create(opts CreateListOpts) error {
-	err :=  svc.ListRepo.Create(repository.CreateListOpts{
-		UserID:      opts.UserID,
+func (svc *ListService) Create(userID int64, opts CreateListOpts) error {
+	err := svc.ListRepo.Create(userID, repository.CreateListOpts{
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
 
-	return fmt.Errorf("ListService: %v", err)
+	if err != nil {
+		return fmt.Errorf("ListService: %v", err)
+	}
+
+	return nil
 }
 
 // GetAll returns all user lists or
@@ -44,8 +46,8 @@ func (svc *ListService) GetAll(userID int64) ([]domain.List, error) {
 	}
 
 	result := make([]domain.List, len(lists))
-	for i, l := range lists {
-		result[i] = *l.ToDomain()
+	for i, list := range lists {
+		result[i] = *list.ToDomain()
 	}
 
 	return result, nil

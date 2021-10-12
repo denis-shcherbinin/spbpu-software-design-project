@@ -22,14 +22,13 @@ func NewListRepo(db *sqlx.DB) *ListRepo {
 }
 
 type CreateListOpts struct {
-	UserID      int64
 	Title       string
 	Description string
 }
 
 // Create creates list to user with passed id
 // It returns internal errors.
-func (repo *ListRepo) Create(opts CreateListOpts) error {
+func (repo *ListRepo) Create(userID int64, opts CreateListOpts) error {
 	tx, err := repo.DB.Beginx()
 	if err != nil {
 		return fmt.Errorf("ListRepo: %v", err)
@@ -56,7 +55,7 @@ func (repo *ListRepo) Create(opts CreateListOpts) error {
 		VALUES
 		    ($1, $2)`
 
-	_, err = tx.Exec(userListQuery, opts.UserID, listID)
+	_, err = tx.Exec(userListQuery, userID, listID)
 	if err != nil {
 		_ = tx.Rollback()
 		return fmt.Errorf("ListRepo: %v", err)
@@ -141,7 +140,7 @@ func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 		UPDATE
 			t_list l
 		SET
-			title = COALESCE($1, title),
+			title 		= COALESCE($1, title),
 			description = COALESCE($2, description)
 		FROM 
 			t_user_list ul
