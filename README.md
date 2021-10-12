@@ -10,7 +10,7 @@
 
 ## ToDo App REST API  
 
-<img align="right" width="35%" src="./images/gopher-big-slice.png" alt="">  
+<img align="right" width="32%" src="./images/gopher-big-slice.png" alt="">  
 
 Приложение REST API для управления повседневными задачами.  
 Возможности API:
