@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
@@ -19,8 +18,7 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 	}
 }
 
-// CheckByCredentials checks the existence of the user with passed credentials
-// It returns bool and internal errors.
+// CheckByCredentials .
 func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, error) {
 	query := `
 		SELECT
@@ -44,14 +42,13 @@ func (repo *UserRepo) CheckByCredentials(username, passwordHash string) (bool, e
 		Scan(&exists)
 
 	if err != nil {
-		return false, fmt.Errorf("UserRepo: %v", err)
+		return false, err
 	}
 
 	return exists, nil
 }
 
-// GetIDByCredentials returns userID if user with passed credentials exists
-// It returns errs.ErrUserNotFound if user doesn't exist and internal errors.
+// GetIDByCredentials .
 func (repo *UserRepo) GetIDByCredentials(username, passwordHash string) (int64, error) {
 	query := `
 			SELECT 
@@ -74,7 +71,7 @@ func (repo *UserRepo) GetIDByCredentials(username, passwordHash string) (int64, 
 		if err == sql.ErrNoRows {
 			return 0, errs.ErrUserNotFound
 		}
-		return 0, fmt.Errorf("UserRepo: %v", err)
+		return 0, err
 	}
 
 	return id, nil

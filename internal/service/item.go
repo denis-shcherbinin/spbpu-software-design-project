@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 )
@@ -24,12 +22,11 @@ type CreateItemOpts struct {
 	Description string
 }
 
-// Create checks that list belongs to user and creates new item.
-// It returns errors if something wrong happened.
+// Create .
 func (svc *ItemService) Create(userID, listID int64, opts CreateItemOpts) error {
 	_, err := svc.ListRepo.GetByID(userID, listID)
 	if err != nil {
-		return fmt.Errorf("ItemService: %v", err)
+		return err
 	}
 
 	err = svc.ItemRepo.Create(listID, repository.CreateItemOpts{
@@ -38,18 +35,17 @@ func (svc *ItemService) Create(userID, listID int64, opts CreateItemOpts) error 
 	})
 
 	if err != nil {
-		return fmt.Errorf("ItemService: %v", err)
+		return err
 	}
 
 	return nil
 }
 
-// GetAll returns all items of user list or
-// Errors is something wrong happened.
+// GetAll .
 func (svc *ItemService) GetAll(userID, listID int64) ([]domain.Item, error) {
 	items, err := svc.ItemRepo.GetAll(userID, listID)
 	if err != nil {
-		return nil, fmt.Errorf("ItemService: %v", err)
+		return nil, err
 	}
 
 	result := make([]domain.Item, len(items))
@@ -60,12 +56,11 @@ func (svc *ItemService) GetAll(userID, listID int64) ([]domain.Item, error) {
 	return result, nil
 }
 
-// GetByID returns user item with passed id or
-// Errors if something wrong happened.
+// GetByID .
 func (svc *ItemService) GetByID(userID, itemID int64) (*domain.Item, error) {
 	item, err := svc.ItemRepo.GetByID(userID, itemID)
 	if err != nil {
-		return nil, fmt.Errorf("ItemService: %v", err)
+		return nil, err
 	}
 
 	return item.ToDomain(), nil
@@ -77,8 +72,7 @@ type UpdateItemOpts struct {
 	Done        *bool
 }
 
-// Update updates user item with passed id
-// It returns errors if something wrong happened.
+// Update .
 func (svc *ItemService) Update(userID, itemID int64, opts UpdateItemOpts) error {
 	err := svc.ItemRepo.Update(userID, itemID, repository.UpdateItemOpts{
 		Title:       opts.Title,
@@ -86,18 +80,17 @@ func (svc *ItemService) Update(userID, itemID int64, opts UpdateItemOpts) error 
 		Done:        opts.Done,
 	})
 	if err != nil {
-		return fmt.Errorf("ItemService: %v", err)
+		return err
 	}
 
 	return nil
 }
 
-// DeleteByID removes user item with passed id
-// It returns errors if something wrong happened.
+// DeleteByID .
 func (svc *ItemService) DeleteByID(userID, itemID int64) error {
 	err := svc.ItemRepo.DeleteByID(userID, itemID)
 	if err != nil {
-		return fmt.Errorf("IteService: %v", err)
+		return err
 	}
 
 	return nil

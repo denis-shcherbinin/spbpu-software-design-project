@@ -54,7 +54,7 @@ func (h *Handler) createList(c echo.Context) error {
 	}
 
 	opts := &createListOpts{}
-	if err := opts.Bind(c); err != nil {
+	if err = opts.Bind(c); err != nil {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
@@ -63,7 +63,7 @@ func (h *Handler) createList(c echo.Context) error {
 		Description: opts.Description,
 	})
 	if err != nil {
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.Create: %v", err))
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
@@ -79,7 +79,7 @@ func (h *Handler) getAllLists(c echo.Context) error {
 
 	lists, err := h.services.List.GetAll(userID)
 	if err != nil {
-		return err
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.GetAll: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, lists)
@@ -99,9 +99,9 @@ func (h *Handler) getList(c echo.Context) error {
 	list, err := h.services.List.GetByID(userID, listID)
 	if err != nil {
 		if err == errs.ErrListNotFound {
-			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("%v: %v", err, listID))
+			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("ListService.GetByID: %v: %v", err, listID))
 		}
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.GetByID: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -144,7 +144,7 @@ func (h *Handler) updateList(c echo.Context) error {
 	}
 
 	opts := &updateListOpts{}
-	if err := opts.Bind(c); err != nil {
+	if err = opts.Bind(c); err != nil {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
@@ -154,9 +154,9 @@ func (h *Handler) updateList(c echo.Context) error {
 	})
 	if err != nil {
 		if err == errs.ErrListNotFound {
-			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("%v: %v", err, listID))
+			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("ListService.Update: %v: %v", err, listID))
 		}
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.Update: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -177,7 +177,11 @@ func (h *Handler) deleteList(c echo.Context) error {
 
 	err = h.services.List.DeleteByID(userID, listID)
 	if err != nil {
-		return errorResponse(c, http.StatusInternalServerError, err)
+		if err == errs.ErrListNotFound {
+			return errorResponse(c, http.StatusBadRequest,
+				fmt.Errorf("ListService.DeleteByID: %v: %v", err, listID))
+		}
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.DeleteByID: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -224,8 +228,7 @@ func (h *Handler) createItem(c echo.Context) error {
 	})
 
 	if err != nil {
-		// TODO: [todo-lists]: not found error handle
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ItemService.Create: %v", err))
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
@@ -246,8 +249,7 @@ func (h *Handler) getAllItems(c echo.Context) error {
 
 	items, err := h.services.Item.GetAll(userID, listID)
 	if err != nil {
-		// TODO: [todo-lists]: not found error handle
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ItemService.GetAll: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, items)
