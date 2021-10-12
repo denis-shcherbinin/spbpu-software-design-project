@@ -16,17 +16,26 @@ type User interface {
 }
 
 type List interface {
-	Create(opts CreateListOpts) error
+	Create(userID int64, opts CreateListOpts) error
 	GetAll(userID int64) ([]domain.List, error)
 	GetByID(userID, listID int64) (*domain.List, error)
 	Update(userID, listID int64, opts UpdateListOpts) error
 	DeleteByID(userID, listID int64) error
 }
 
+type Item interface {
+	Create(userID, listID int64, opts CreateItemOpts) error
+	GetAll(userID, listID int64) ([]domain.Item, error)
+	GetByID(userID, itemID int64) (*domain.Item, error)
+	Update(userID, itemID int64, opts UpdateItemOpts) error
+	DeleteByID(userID, itemID int64) error
+}
+
 type Service struct {
 	Auth Auth
 	User User
 	List List
+	Item Item
 }
 
 type NewServiceOpts struct {
@@ -41,9 +50,12 @@ func NewService(opts NewServiceOpts) *Service {
 		Hasher:   opts.Hasher,
 	})
 
+	itemSvc := NewItemService(opts.Repo.Item, opts.Repo.List)
+
 	return &Service{
 		Auth: authSvc,
 		User: NewUserService(opts.Repo.User),
 		List: NewListService(opts.Repo.List),
+		Item: itemSvc,
 	}
 }

@@ -16,10 +16,18 @@ type User interface {
 }
 
 type List interface {
-	Create(opts CreateListOpts) error
+	Create(userID int64, opts CreateListOpts) error
 	GetAll(userID int64) ([]entity.List, error)
 	GetByID(userID, listID int64) (*entity.List, error)
 	Update(userID, listID int64, opts UpdateListOpts) error
+	DeleteByID(userID, listID int64) error
+}
+
+type Item interface {
+	Create(listID int64, opts CreateItemOpts) error
+	GetAll(userID int64, listID int64) ([]entity.Item, error)
+	GetByID(userID, itemID int64) (*entity.Item, error)
+	Update(userID, itemID int64, opts UpdateItemOpts) error
 	DeleteByID(userID, listID int64) error
 }
 
@@ -27,6 +35,7 @@ type Repository struct {
 	Auth Auth
 	User User
 	List List
+	Item Item
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -34,5 +43,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 		Auth: NewAuthRepo(db),
 		User: NewUserRepo(db),
 		List: NewListRepo(db),
+		Item: NewItemRepo(db),
 	}
 }

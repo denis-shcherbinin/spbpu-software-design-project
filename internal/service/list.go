@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/domain"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 )
@@ -18,45 +16,44 @@ func NewListService(listRepo repository.List) *ListService {
 }
 
 type CreateListOpts struct {
-	UserID      int64
 	Title       string
 	Description string
 }
 
-// Create creates a new list
-// It returns errors.
-func (svc *ListService) Create(opts CreateListOpts) error {
-	err :=  svc.ListRepo.Create(repository.CreateListOpts{
-		UserID:      opts.UserID,
+// Create .
+func (svc *ListService) Create(userID int64, opts CreateListOpts) error {
+	err := svc.ListRepo.Create(userID, repository.CreateListOpts{
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
 
-	return fmt.Errorf("ListService: %v", err)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// GetAll returns all user lists or
-// Errors if something wrong happened.
+// GetAll .
 func (svc *ListService) GetAll(userID int64) ([]domain.List, error) {
 	lists, err := svc.ListRepo.GetAll(userID)
 	if err != nil {
-		return nil, fmt.Errorf("ListService: %v", err)
+		return nil, err
 	}
 
 	result := make([]domain.List, len(lists))
-	for i, l := range lists {
-		result[i] = *l.ToDomain()
+	for i, list := range lists {
+		result[i] = *list.ToDomain()
 	}
 
 	return result, nil
 }
 
-// GetByID returns user list by id or
-// Errors if something wrong happened.
+// GetByID .
 func (svc *ListService) GetByID(userID, listID int64) (*domain.List, error) {
 	list, err := svc.ListRepo.GetByID(userID, listID)
 	if err != nil {
-		return nil, fmt.Errorf("ListService: %v", err)
+		return nil, err
 	}
 
 	return list.ToDomain(), nil
@@ -67,21 +64,25 @@ type UpdateListOpts struct {
 	Description *string
 }
 
-// Update updates user list by id or
-// Errors if something wrong happened.
+// Update .
 func (svc *ListService) Update(userID, listID int64, opts UpdateListOpts) error {
 	err := svc.ListRepo.Update(userID, listID, repository.UpdateListOpts{
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
+	if err != nil {
+		return err
+	}
 
-	return fmt.Errorf("ListService: %v", err)
+	return nil
 }
 
-// DeleteByID removes user list by id or
-// Errors if something wrong happened.
+// DeleteByID .
 func (svc *ListService) DeleteByID(userID, listID int64) error {
 	err := svc.ListRepo.DeleteByID(userID, listID)
+	if err != nil {
+		return err
+	}
 
-	return fmt.Errorf("ListService: %v", err)
+	return nil
 }

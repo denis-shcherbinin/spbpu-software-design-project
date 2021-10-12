@@ -35,8 +35,7 @@ type SignUpOpts struct {
 	Password   string
 }
 
-// SignUp creates a new user
-// It returns error if user with passed credentials already exists and other errors.
+// SignUp .
 func (svc *AuthService) SignUp(opts SignUpOpts) error {
 	err := svc.AuthRepo.CreateUser(repository.CreateUserOpts{
 		FirstName:  opts.FirstName,
@@ -56,9 +55,7 @@ type SignInOpts struct {
 	Password string
 }
 
-// SignIn authenticates the user with passed credentials
-// It returns username and password hash if authentication is successful
-// And errors if not.
+// SignIn .
 func (svc *AuthService) SignIn(opts SignInOpts) (string, string, error) {
 	passwordHash := svc.Hasher.Hash(opts.Password)
 

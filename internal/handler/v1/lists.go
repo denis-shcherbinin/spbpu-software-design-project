@@ -21,12 +21,18 @@ func (h *Handler) initTodoListsRoutes(api *echo.Group) {
 		lists.GET("/:id", h.getList, noBody)
 		lists.PUT("/:id", h.updateList)
 		lists.DELETE("/:id", h.deleteList, noBody)
+
+		items := lists.Group("/:id/items")
+		{
+			items.POST("/", h.createItem)
+			items.GET("/", h.getAllItems, noBody)
+		}
 	}
 }
 
 type createListOpts struct {
 	Title       string `json:"title"`
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 }
 
 func (opts *createListOpts) Bind(c echo.Context) error {
@@ -48,17 +54,16 @@ func (h *Handler) createList(c echo.Context) error {
 	}
 
 	opts := &createListOpts{}
-	if err := opts.Bind(c); err != nil {
+	if err = opts.Bind(c); err != nil {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
-	err = h.services.List.Create(service.CreateListOpts{
-		UserID:      userID,
+	err = h.services.List.Create(userID, service.CreateListOpts{
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
 	if err != nil {
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.Create: %v", err))
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
@@ -74,7 +79,7 @@ func (h *Handler) getAllLists(c echo.Context) error {
 
 	lists, err := h.services.List.GetAll(userID)
 	if err != nil {
-		return err
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.GetAll: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, lists)
@@ -94,9 +99,9 @@ func (h *Handler) getList(c echo.Context) error {
 	list, err := h.services.List.GetByID(userID, listID)
 	if err != nil {
 		if err == errs.ErrListNotFound {
-			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("%v: %v", err, listID))
+			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("ListService.GetByID: %v: %v", err, listID))
 		}
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.GetByID: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -139,7 +144,7 @@ func (h *Handler) updateList(c echo.Context) error {
 	}
 
 	opts := &updateListOpts{}
-	if err := opts.Bind(c); err != nil {
+	if err = opts.Bind(c); err != nil {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
@@ -149,9 +154,9 @@ func (h *Handler) updateList(c echo.Context) error {
 	})
 	if err != nil {
 		if err == errs.ErrListNotFound {
-			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("%v: %v", err, listID))
+			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("ListService.Update: %v: %v", err, listID))
 		}
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.Update: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -172,10 +177,80 @@ func (h *Handler) deleteList(c echo.Context) error {
 
 	err = h.services.List.DeleteByID(userID, listID)
 	if err != nil {
-		return errorResponse(c, http.StatusInternalServerError, err)
+		if err == errs.ErrListNotFound {
+			return errorResponse(c, http.StatusBadRequest,
+				fmt.Errorf("ListService.DeleteByID: %v: %v", err, listID))
+		}
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ListService.DeleteByID: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"success": true,
 	})
+}
+
+type createItemOpts struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+func (opts *createItemOpts) Bind(c echo.Context) error {
+	if err := c.Bind(opts); err != nil {
+		return fmt.Errorf("can't bind: %v", err)
+	}
+
+	if len(opts.Title) == 0 {
+		return errors.New("empty todo-item title")
+	}
+
+	return nil
+}
+
+func (h *Handler) createItem(c echo.Context) error {
+	listID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	userID, err := h.getUserID(c)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	opts := &createItemOpts{}
+	if err := opts.Bind(c); err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	err = h.services.Item.Create(userID, listID, service.CreateItemOpts{
+		Title:       opts.Title,
+		Description: opts.Description,
+	})
+
+	if err != nil {
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ItemService.Create: %v", err))
+	}
+
+	return c.JSON(http.StatusCreated, echo.Map{
+		"success": true,
+	})
+}
+
+func (h *Handler) getAllItems(c echo.Context) error {
+	listID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	userID, err := h.getUserID(c)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	items, err := h.services.Item.GetAll(userID, listID)
+	if err != nil {
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ItemService.GetAll: %v", err))
+	}
+
+	return c.JSON(http.StatusOK, items)
 }
