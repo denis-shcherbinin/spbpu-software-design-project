@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/repository"
 )
 
@@ -16,12 +14,11 @@ func NewUserService(userRepo repository.User) *UserService {
 	}
 }
 
-// GetIDByCredentials returns user id or
-// Error if something wrong happened.
+// GetIDByCredentials .
 func (svc *UserService) GetIDByCredentials(username, passwordHash string) (int64, error) {
 	userID, err := svc.UserRepo.GetIDByCredentials(username, passwordHash)
 	if err != nil {
-		return 0, fmt.Errorf("UserService: %v", err)
+		return 0, err
 	}
 
 	return userID, nil

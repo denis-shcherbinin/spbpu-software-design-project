@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
@@ -25,12 +24,11 @@ type CreateItemOpts struct {
 	Description string
 }
 
-// Create creates item of list with passed id
-// It returns internal errors.
+// Create .
 func (repo *ItemRepo) Create(listID int64, opts CreateItemOpts) error {
 	tx, err := repo.DB.Beginx()
 	if err != nil {
-		return fmt.Errorf("ItemRepo: %v", err)
+		return err
 	}
 
 	itemQuery := `
@@ -48,7 +46,7 @@ func (repo *ItemRepo) Create(listID int64, opts CreateItemOpts) error {
 		Scan(&itemID)
 	if err != nil {
 		_ = tx.Rollback()
-		return fmt.Errorf("ItemRepo: %v", err)
+		return err
 	}
 
 	listItemQuery := `
@@ -59,20 +57,18 @@ func (repo *ItemRepo) Create(listID int64, opts CreateItemOpts) error {
 	_, err = tx.Exec(listItemQuery, listID, itemID)
 	if err != nil {
 		_ = tx.Rollback()
-		return fmt.Errorf("ItemRepo: %v", err)
+		return err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return fmt.Errorf("ItemRepo: %v", err)
+		return err
 	}
 
 	return nil
 }
 
-// GetAll form slice with all items of user list with passed id
-// It returns all items or
-// errs.ErrItemNotFound if listID or userID is wrong and internal errors.
+// GetAll .
 func (repo *ItemRepo) GetAll(userID, listID int64) ([]entity.Item, error) {
 	query := `
 		SELECT
@@ -101,16 +97,15 @@ func (repo *ItemRepo) GetAll(userID, listID int64) ([]entity.Item, error) {
 
 	if err := repo.DB.Select(&items, query, listID, userID); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("ItemRepo: %v", errs.ErrItemNotFound)
+			return nil, errs.ErrItemNotFound
 		}
-		return nil, fmt.Errorf("ItemRepo: %v", err)
+		return nil, err
 	}
 
 	return items, nil
 }
 
-// GetByID returns user item with passed id or
-// errs.ErrItemNotFound and internal errors.
+// GetByID .
 func (repo *ItemRepo) GetByID(userID, itemID int64) (*entity.Item, error) {
 	query := `
 		SELECT
@@ -138,9 +133,9 @@ func (repo *ItemRepo) GetByID(userID, itemID int64) (*entity.Item, error) {
 
 	if err := repo.DB.Get(&item, query, itemID, userID); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("ItemRepo: %v", errs.ErrItemNotFound)
+			return nil, errs.ErrItemNotFound
 		}
-		return nil, fmt.Errorf("ItemRepo: %v", err)
+		return nil, err
 	}
 
 	return &item, nil
@@ -152,8 +147,7 @@ type UpdateItemOpts struct {
 	Done        *bool
 }
 
-// Update updates user item with passed id
-// It returns errs.ErrItemNotFound if wrong item id and internal errors.
+// Update .
 func (repo *ItemRepo) Update(userID, itemID int64, opts UpdateItemOpts) error {
 	query := `
 		UPDATE
@@ -183,14 +177,14 @@ func (repo *ItemRepo) Update(userID, itemID int64, opts UpdateItemOpts) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("ItemRepo: %v", err)
+		return err
 	}
 	count, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("ItemRepo: %v", err)
+		return err
 	}
 	if count != 1 {
-		return fmt.Errorf("ItemRepo: %v", errs.ErrItemNotFound)
+		return errs.ErrItemNotFound
 	}
 
 	return nil
@@ -215,14 +209,14 @@ func (repo *ItemRepo) DeleteByID(userID, itemID int64) error {
 
 	result, err := repo.DB.Exec(query, userID, itemID)
 	if err != nil {
-		return fmt.Errorf("ItemRepo: %v", err)
+		return err
 	}
 	count, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("ItemRepo: %v", err)
+		return err
 	}
 	if count != 1 {
-		return fmt.Errorf("ItemRepo: %v", errs.ErrItemNotFound)
+		return errs.ErrItemNotFound
 	}
 
 	return nil

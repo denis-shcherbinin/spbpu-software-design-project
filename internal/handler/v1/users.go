@@ -75,9 +75,9 @@ func (h *Handler) signUp(c echo.Context) error {
 	})
 	if err != nil {
 		if err == errs.ErrUserAlreadyExists {
-			return errorResponse(c, http.StatusConflict, err)
+			return errorResponse(c, http.StatusConflict, fmt.Errorf("AuthService.SignUp: %v", err))
 		}
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("AuthService.SignUp: %v", err))
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
@@ -118,9 +118,9 @@ func (h *Handler) signIn(c echo.Context) error {
 	})
 	if err != nil {
 		if err == errs.ErrUserNotFound {
-			return errorResponse(c, http.StatusForbidden, err)
+			return errorResponse(c, http.StatusForbidden, fmt.Errorf("AuthService.SignIn: %v", err))
 		}
-		return errorResponse(c, http.StatusInternalServerError, err)
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("AuthService.SignIn: %v", err))
 	}
 
 	setBasicAuthHeader(c, username, passwordHash)

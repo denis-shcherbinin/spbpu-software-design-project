@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/errs"
 	"github.com/denis-shcherbinin/spbpu-software-design-project/internal/service"
 )
 
@@ -34,8 +35,10 @@ func (h *Handler) getItem(c echo.Context) error {
 
 	item, err := h.services.Item.GetByID(userID, itemID)
 	if err != nil {
-		// TODO: [todo-lists] not found error handle
-		return errorResponse(c, http.StatusInternalServerError, err)
+		if err == errs.ErrItemNotFound {
+			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("ItemService.GetByID: %v: %v", err, itemID))
+		}
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ItemService.GetByID: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -79,7 +82,7 @@ func (h *Handler) updateItem(c echo.Context) error {
 	}
 
 	opts := &updateItemOpts{}
-	if err := opts.Bind(c); err != nil {
+	if err = opts.Bind(c); err != nil {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
@@ -90,8 +93,10 @@ func (h *Handler) updateItem(c echo.Context) error {
 	})
 
 	if err != nil {
-		// TODO: [todo-lists] not found error handle
-		return errorResponse(c, http.StatusInternalServerError, err)
+		if err == errs.ErrItemNotFound {
+			return errorResponse(c, http.StatusBadRequest, fmt.Errorf("ItemService.Update: %v: %v", err, itemID))
+		}
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ItemService.Update: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -112,8 +117,11 @@ func (h *Handler) deleteItem(c echo.Context) error {
 
 	err = h.services.Item.DeleteByID(userID, itemID)
 	if err != nil {
-		// TODO: [todo-lists] not found error handle
-		return errorResponse(c, http.StatusInternalServerError, err)
+		if err == errs.ErrItemNotFound {
+			return errorResponse(c, http.StatusBadRequest,
+				fmt.Errorf("ItemService.DeleteByID: %v: %v", err, itemID))
+		}
+		return errorResponse(c, http.StatusInternalServerError, fmt.Errorf("ItemService.DeleteByID: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
@@ -26,8 +25,7 @@ type CreateUserOpts struct {
 	Password   string
 }
 
-// CreateUser create user with passed opts
-// It returns errs.ErrUserAlreadyExists or other internal errors.
+// CreateUser .
 func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
 	query := `
 		INSERT INTO 
@@ -44,10 +42,10 @@ func (repo *AuthRepo) CreateUser(opts CreateUserOpts) error {
 	if err != nil {
 		// User with passed username already exists
 		if err != sql.ErrNoRows {
-			return fmt.Errorf("AuthRepo: %v", errs.ErrUserAlreadyExists)
+			return errs.ErrUserAlreadyExists
 		}
 
-		return fmt.Errorf("AuthRepo: %v", err)
+		return err
 	}
 
 	return nil
