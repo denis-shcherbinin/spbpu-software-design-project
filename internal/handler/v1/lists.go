@@ -21,12 +21,18 @@ func (h *Handler) initTodoListsRoutes(api *echo.Group) {
 		lists.GET("/:id", h.getList, noBody)
 		lists.PUT("/:id", h.updateList)
 		lists.DELETE("/:id", h.deleteList, noBody)
+
+		items := lists.Group("/:id/items")
+		{
+			items.POST("/", h.createItem)
+			items.GET("/", h.getAllItems, noBody)
+		}
 	}
 }
 
 type createListOpts struct {
 	Title       string `json:"title"`
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 }
 
 func (opts *createListOpts) Bind(c echo.Context) error {
@@ -52,8 +58,7 @@ func (h *Handler) createList(c echo.Context) error {
 		return errorResponse(c, http.StatusBadRequest, err)
 	}
 
-	err = h.services.List.Create(service.CreateListOpts{
-		UserID:      userID,
+	err = h.services.List.Create(userID, service.CreateListOpts{
 		Title:       opts.Title,
 		Description: opts.Description,
 	})
@@ -178,4 +183,72 @@ func (h *Handler) deleteList(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"success": true,
 	})
+}
+
+type createItemOpts struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+func (opts *createItemOpts) Bind(c echo.Context) error {
+	if err := c.Bind(opts); err != nil {
+		return fmt.Errorf("can't bind: %v", err)
+	}
+
+	if len(opts.Title) == 0 {
+		return errors.New("empty todo-item title")
+	}
+
+	return nil
+}
+
+func (h *Handler) createItem(c echo.Context) error {
+	listID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	userID, err := h.getUserID(c)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	opts := &createItemOpts{}
+	if err := opts.Bind(c); err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	err = h.services.Item.Create(userID, listID, service.CreateItemOpts{
+		Title:       opts.Title,
+		Description: opts.Description,
+	})
+
+	if err != nil {
+		// TODO: [todo-lists]: not found error handle
+		return errorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusCreated, echo.Map{
+		"success": true,
+	})
+}
+
+func (h *Handler) getAllItems(c echo.Context) error {
+	listID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	userID, err := h.getUserID(c)
+	if err != nil {
+		return errorResponse(c, http.StatusBadRequest, err)
+	}
+
+	items, err := h.services.Item.GetAll(userID, listID)
+	if err != nil {
+		// TODO: [todo-lists]: not found error handle
+		return errorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, items)
 }
