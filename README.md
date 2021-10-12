@@ -8,9 +8,9 @@
 
 **Денис Щербинин, гр. 3530202/90201.**  
 
-<img align="right" width="35%" src="./images/gopher-big-slice.png" alt="">  
-
 ## ToDo App REST API  
+
+<img align="right" width="35%" src="./images/gopher-big-slice.png" alt="">  
 
 Приложение REST API для управления повседневными задачами.  
 Возможности API:
