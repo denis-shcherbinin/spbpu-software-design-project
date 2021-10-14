@@ -1,4 +1,4 @@
-version: "3.0"
+version: "3.3"
 
 services:
   todo-app:
@@ -10,7 +10,8 @@ services:
       - .env
     volumes:
       - ./var/todo-app:/srv/var
-    network_mode: "host"
+    ports:
+      - "8080:8080"
     depends_on:
       - "migrate"
 
