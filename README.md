@@ -4,7 +4,7 @@
 ![Lines of code](https://img.shields.io/tokei/lines/github/denis-shcherbinin/spbpu-software-design-project)
 ![Github Repository Size](https://img.shields.io/github/repo-size/evt/rest-api-example)
 
-# Проект "todo-app" в рамках курса "Конструирование программного обеспечения" в СПбПУ.  
+# Проект "TODO App API" в рамках курса "Конструирование программного обеспечения" в СПбПУ.  
 
 **Денис Щербинин, гр. 3530202/90201.**  
 
