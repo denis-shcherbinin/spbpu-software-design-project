@@ -44,6 +44,10 @@ func (repo *ListRepo) Create(userID int64, opts CreateListOpts) error {
 	err = tx.Get(&listID, listQuery, opts.Title, opts.Description)
 	if err != nil {
 		_ = tx.Rollback()
+<<<<<<< HEAD
+
+=======
+>>>>>>> 5343e6538e61773e7dba7298d408d5d379b7d030
 		return err
 	}
 
@@ -137,7 +141,11 @@ func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 			t_list l
 		SET
 			title 		  = COALESCE($1, title),
+<<<<<<< HEAD
+			description = COALESCE($2, description)
+=======
 			description   = COALESCE($2, description)
+>>>>>>> 5343e6538e61773e7dba7298d408d5d379b7d030
 		FROM 
 			t_user_list ul
 		WHERE
@@ -166,6 +174,13 @@ func (repo *ListRepo) Update(userID, listID int64, opts UpdateListOpts) error {
 	if count != 1 {
 		return errs.ErrListNotFound
 	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if count != 1 {
+		return errs.ErrListNotFound
+	}
 
 	return nil
 }
@@ -185,12 +200,22 @@ func (repo *ListRepo) DeleteByID(userID, listID int64) error {
 			ul.list_id = $2`
 
 	result, err := repo.DB.Exec(query, userID, listID)
+<<<<<<< HEAD
+	if err != nil {
+		return err
+	}
+	count, err := result.RowsAffected()
+=======
+>>>>>>> 5343e6538e61773e7dba7298d408d5d379b7d030
 	if err != nil {
 		return err
 	}
 	count, err := result.RowsAffected()
 	if err != nil {
 		return err
+	}
+	if count != 1 {
+		return errs.ErrListNotFound
 	}
 	if count != 1 {
 		return errs.ErrListNotFound
